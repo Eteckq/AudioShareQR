@@ -31,7 +31,7 @@
                 data-original="#000000"
               />
             </svg>
-            Upload file
+            Upload audio file
 
             <input
               ref="fileInput"
@@ -42,9 +42,6 @@
               @change="handleFileChange"
               class="hidden"
             />
-            <p class="text-xs font-medium text-slate-400 mt-2">
-              PNG, JPG SVG, WEBP, and GIF are Allowed.
-            </p>
           </label>
         </div>
 

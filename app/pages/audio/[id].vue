@@ -4,12 +4,12 @@
       <p class="text-black">Chargement...</p>
     </div>
 
-    <div v-else-if="error" class="text-red-600">
+    <div v-else-if="error" class="text-red-600 text-center">
       {{ error }}
     </div>
 
     <div v-else-if="file" class="px-4">
-      <h1 class="text-xl text-white font-bold mb-8 text-center">
+      <h1 class="text-2xl text-white font-normal mb-8 text-center">
         {{ file.name }}
       </h1>
 

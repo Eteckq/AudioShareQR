@@ -5,12 +5,12 @@
     <div class="flex justify-center my-16">
       <button
         @click="togglePlay"
-        class="w-24 h-24 bg-purple-500 hover:bg-purple-400 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl"
+        class="w-24 h-24 border-2 border-purple-400 rounded-full flex items-center justify-center"
         :class="{ 'animate-pulse': isPlaying }"
       >
         <svg 
           v-if="!isPlaying" 
-          class="w-8 h-8 text-white ml-1" 
+          class="w-16 h-16 text-purple-400 ml-1" 
           fill="currentColor" 
           viewBox="0 0 24 24"
         >
@@ -18,7 +18,7 @@
         </svg>
         <svg 
           v-else 
-          class="w-8 h-8 text-white" 
+          class="w-12 h-12 text-purple-400" 
           fill="currentColor" 
           viewBox="0 0 24 24"
         >

@@ -7,15 +7,15 @@
           v-model="form.name"
           type="text"
           required
-          class="w-full border-b border-black bg-transparent py-2 text-black placeholder-gray-400 focus:outline-none"
-          placeholder="Nom du fichier"
+          class="w-full border-b bg-transparent py-2 placeholder-gray-400 focus:outline-none"
+          placeholder="Nom de l'audio"
           @input="checkNameInput"
         />
       </div>
       <button
         @click="nextStep"
         :disabled="!form.name.trim()"
-        class="w-full border border-black py-2 text-black hover:bg-black hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        class="w-full border rounded py-2 hover:bg-black hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Continuer
       </button>
@@ -24,20 +24,20 @@
     <!-- Étape 2: Upload du fichier -->
     <div v-if="step === 2" class="space-y-6">
       <div class="text-center">
-        <p class="text-sm text-gray-600 mb-4">
+        <p class="text-md text-gray-300 mb-4">
           Fichier: <strong>{{ form.name }}</strong>
         </p>
       </div>
 
       <div
-        class="bg-white text-slate-500 font-semibold text-base rounded max-w-md h-52 cursor-pointer border-2 border-gray-300 border-dashed mx-auto hover:border-gray-400 transition-colors text-center flex flex-col items-center justify-center min-w-72"
+        class=" text-slate-500 font-semibold text-base rounded max-w-md h-52 cursor-pointer border-2 border-gray-300 border-dashed mx-auto hover:border-gray-400 transition-colors text-center flex flex-col items-center justify-center min-w-72"
       >
         <!-- Animation d'upload -->
         <div v-if="uploading">
           <div
-            class=" inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black mb-4"
+            class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black mb-4"
           ></div>
-          <p class="text-gray-600">Upload en cours...</p>
+          <p class="text-gray-400">Upload en cours...</p>
         </div>
         <label
           v-else
@@ -79,7 +79,6 @@
         ← Retour
       </button>
     </div>
-
 
     <div v-if="error" class="mt-4 text-red-600 text-sm text-center">
       {{ error }}

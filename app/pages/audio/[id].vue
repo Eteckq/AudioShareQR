@@ -8,14 +8,12 @@
       {{ error }}
     </div>
 
-    <div v-else-if="file" class=" ">
-      <h1 class="text-xl font-normal text-black mb-8 text-center">
+    <div v-else-if="file" class="px-4">
+      <h1 class="text-xl text-white font-bold mb-8 text-center">
         {{ file.name }}
       </h1>
 
-      <audio class="w-full" :src="audioUrl"  controlsList="nodownload" controls>
-        Votre navigateur ne supporte pas l'élément audio.
-      </audio>
+      <AudioPlayer :src="audioUrl" @ended="onEnded" />
     </div>
   </div>
 </template>

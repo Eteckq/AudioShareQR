@@ -99,6 +99,9 @@ export default defineEventHandler(async (event) => {
       originalName: fileName
     })
 
+    console.log(`File "${userName}" saved: ${savedFile.id}`);
+
+
     return {
       success: true,
       file: savedFile,

@@ -11,7 +11,7 @@ function getBasePathInternal() {
   } else {
     // En mode build/production, le code est dans .output/server
     // donc on doit remonter de 2 niveaux pour atteindre la racine du projet
-    return path.join(process.cwd(), '..', '..')
+    return path.join(process.cwd(), '..')
   }
 }
 

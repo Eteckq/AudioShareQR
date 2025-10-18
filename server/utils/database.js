@@ -4,16 +4,9 @@ import path from 'path'
 
 // Fonction pour obtenir le chemin de base selon l'environnement
 function getBasePathInternal() {
-  const isDev = process.env.DEV === 'true'
+  // const isDev = process.env.DEV === 'true'
   
-  if (isDev) {
-    // En mode dev, utiliser le répertoire courant
-    return process.cwd()
-  } else {
-    // En mode build/production, le code est dans .output/server
-    // donc on doit remonter de 2 niveaux pour atteindre la racine du projet
-    return path.join(process.cwd(), '..')
-  }
+  return process.cwd()
 }
 
 const BASE_PATH = getBasePathInternal()

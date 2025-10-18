@@ -1,12 +1,13 @@
 import multer from 'multer'
 import fs from 'fs'
 import path from 'path'
-import { saveFile } from '../utils/database'
+import { saveFile, getFilesDir } from '../utils/database'
 
 // Configuration de multer pour l'upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const uploadDir = path.join(process.cwd(), 'files')
+    // Utiliser la fonction utilitaire pour obtenir le bon chemin
+    const uploadDir = getFilesDir()
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true })
     }
@@ -62,7 +63,7 @@ export default defineEventHandler(async (event) => {
     for (const item of formData) {
       if (item.name === 'file' && item.filename) {
         // Sauvegarder le fichier
-        const uploadDir = path.join(process.cwd(), 'files')
+        const uploadDir = getFilesDir()
         if (!fs.existsSync(uploadDir)) {
           fs.mkdirSync(uploadDir, { recursive: true })
         }
@@ -87,7 +88,9 @@ export default defineEventHandler(async (event) => {
     }
 
     // Sauvegarder les informations en base
-    const relativePath = path.relative(process.cwd(), filePath)
+    const { getBasePath } = await import('../utils/database')
+    const basePath = getBasePath()
+    const relativePath = path.relative(basePath, filePath)
     const savedFile = saveFile({
       name: fileName,
       path: relativePath,

@@ -24,6 +24,19 @@ npm install
 npm run dev
 ```
 
+## Variables d'environnement
+
+L'application utilise une variable d'environnement `DEV` pour gérer les chemins de fichiers selon l'environnement :
+
+- **Mode développement** (`DEV=true`) : Les fichiers sont stockés dans le répertoire courant
+- **Mode production** (`DEV=false`) : Les fichiers sont stockés dans le répertoire parent (pour le build)
+
+### Scripts disponibles
+
+- `npm run dev` - Lance le serveur en mode développement (DEV=true)
+- `npm run build` - Build l'application en mode production (DEV=false)
+- `npm run preview` - Prévisualise l'application buildée (DEV=false)
+
 ## Utilisation
 
 1. **Page d'upload** (`/`) : 

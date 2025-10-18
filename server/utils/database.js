@@ -1,8 +1,34 @@
 import fs from 'fs'
 import path from 'path'
 
-const DB_FILE = path.join(process.cwd(), 'data', 'files.json')
-const DATA_DIR = path.join(process.cwd(), 'data')
+// Fonction pour obtenir le chemin de base selon l'environnement
+function getBasePathInternal() {
+  const isDev = process.env.DEV === 'true'
+  
+  if (isDev) {
+    // En mode dev, utiliser le répertoire courant
+    return process.cwd()
+  } else {
+    // En mode build/production, le code est dans .output/server
+    // donc on doit remonter de 2 niveaux pour atteindre la racine du projet
+    return path.join(process.cwd(), '..', '..')
+  }
+}
+
+const BASE_PATH = getBasePathInternal()
+const DB_FILE = path.join(BASE_PATH, 'data', 'files.json')
+const DATA_DIR = path.join(BASE_PATH, 'data')
+const FILES_DIR = path.join(BASE_PATH, 'files')
+
+// Fonction pour obtenir le chemin du dossier files
+export function getFilesDir() {
+  return FILES_DIR
+}
+
+// Fonction pour obtenir le chemin de base
+export function getBasePath() {
+  return BASE_PATH
+}
 
 // Créer le dossier data s'il n'existe pas
 if (!fs.existsSync(DATA_DIR)) {

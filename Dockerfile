@@ -39,6 +39,7 @@ EXPOSE 3000
 
 # Variables d'environnement
 ENV NODE_ENV=production
+ENV DEV=false
 ENV NUXT_HOST=0.0.0.0
 ENV NUXT_PORT=3000
 

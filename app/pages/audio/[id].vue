@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto">
+  <div class="mx-auto w-full ">
     <div v-if="loading" class="text-center">
       <p class="text-black">Chargement...</p>
     </div>
@@ -8,12 +8,12 @@
       {{ error }}
     </div>
 
-    <div v-else-if="file">
+    <div v-else-if="file" class=" ">
       <h1 class="text-xl font-normal text-black mb-8 text-center">
         {{ file.name }}
       </h1>
 
-      <audio class="md:w-[50vw]" :src="audioUrl" controls>
+      <audio class="w-full" :src="audioUrl" controlsList="nodownload" controls>
         Votre navigateur ne supporte pas l'élément audio.
       </audio>
     </div>

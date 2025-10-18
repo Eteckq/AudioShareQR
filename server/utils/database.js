@@ -1,3 +1,4 @@
+import { log } from 'console'
 import fs from 'fs'
 import path from 'path'
 
@@ -16,6 +17,7 @@ function getBasePathInternal() {
 }
 
 const BASE_PATH = getBasePathInternal()
+console.log(BASE_PATH)
 const DB_FILE = path.join(BASE_PATH, 'data', 'files.json')
 const DATA_DIR = path.join(BASE_PATH, 'data')
 const FILES_DIR = path.join(BASE_PATH, 'files')

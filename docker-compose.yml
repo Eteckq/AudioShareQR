@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  qrcodeupload:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NUXT_HOST=0.0.0.0
+      - NUXT_PORT=3000
+    volumes:
+      # Persister les fichiers uploadés
+      - ../files:/app/files
+      # Persister la base de données JSON
+      - ../data:/app/data
+    restart: unless-stopped
+
+volumes:
+  # Volumes pour persister les données
+  files-data:
+  database-data:

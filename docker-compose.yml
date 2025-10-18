@@ -17,8 +17,3 @@ services:
       # Persister la base de données JSON
       - ../data:/app/data
     restart: unless-stopped
-
-volumes:
-  # Volumes pour persister les données
-  files-data:
-  database-data:

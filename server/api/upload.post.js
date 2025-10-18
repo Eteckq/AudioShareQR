@@ -44,6 +44,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  
   try {
     // Utiliser multer pour parser le multipart/form-data
     const formData = await readMultipartFormData(event)
@@ -56,6 +57,7 @@ export default defineEventHandler(async (event) => {
     }
 
     let fileName = ''
+    let userName = ''
     let fileData = null
     let filePath = ''
 
@@ -76,7 +78,7 @@ export default defineEventHandler(async (event) => {
         fs.writeFileSync(filePath, item.data)
         fileName = item.filename
       } else if (item.name === 'name') {
-        fileName = item.data.toString()
+        userName = item.data.toString()
       }
     }
 
@@ -92,7 +94,7 @@ export default defineEventHandler(async (event) => {
     const basePath = getBasePath()
     const relativePath = path.relative(basePath, filePath)
     const savedFile = saveFile({
-      name: fileName,
+      name: userName,
       path: relativePath,
       originalName: fileName
     })

@@ -31,8 +31,6 @@ FROM base AS runner
 
 # Copier les fichiers nécessaires
 COPY --from=builder /app/.output /app/.output
-COPY --from=builder /app/data /app/data
-COPY --from=builder /app/files /app/files
 COPY --from=builder /app/package.json /app/package.json
 
 

@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   if (!id) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'ID requis'
+      message: 'ID requis'
     })
   }
 
@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   if (!file) {
     throw createError({
       statusCode: 404,
-      statusMessage: 'Fichier non trouvé'
+      message: 'Fichier non trouvé'
     })
   }
 

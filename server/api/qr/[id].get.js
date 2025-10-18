@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   if (!id) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'ID requis'
+      message: 'ID requis'
     })
   }
 
@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     console.error('Erreur génération QR code:', error)
     throw createError({
       statusCode: 500,
-      statusMessage: 'Erreur lors de la génération du QR code'
+      message: 'Erreur lors de la génération du QR code'
     })
   }
 })

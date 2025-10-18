@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   if (!filename) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Nom de fichier requis'
+      message: 'Nom de fichier requis'
     })
   }
 
@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
   if (!fs.existsSync(filePath)) {
     throw createError({
       statusCode: 404,
-      statusMessage: 'Fichier non trouvé'
+      message: 'Fichier non trouvé'
     })
   }
 

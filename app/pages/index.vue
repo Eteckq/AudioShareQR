@@ -80,33 +80,6 @@
       </button>
     </div>
 
-    <!-- Étape 3: Résultat avec QR code -->
-    <div v-if="step === 3 && qrCodeUrl" class="text-center space-y-6">
-      <div class="space-y-4">
-        <h2 class="text-xl font-semibold text-black">
-          Fichier uploadé avec succès!
-        </h2>
-        <img :src="qrCodeUrl" alt="QR Code" class="mx-auto mb-4" />
-        <div class="space-y-2">
-          <p class="text-sm text-gray-600">
-            Nom: <strong>{{ form.name }}</strong>
-          </p>
-          <NuxtLink
-            :to="`/audio/${fileId}`"
-            class="inline-block text-black underline hover:text-gray-600 transition-colors"
-          >
-            Écouter le fichier
-          </NuxtLink>
-        </div>
-      </div>
-
-      <button
-        @click="resetForm"
-        class="w-full border border-black py-2 text-black hover:bg-black hover:text-white transition-colors"
-      >
-        Uploader un nouveau fichier
-      </button>
-    </div>
 
     <div v-if="error" class="mt-4 text-red-600 text-sm text-center">
       {{ error }}
@@ -120,10 +93,8 @@ const form = ref({
   file: null,
 });
 
-const step = ref(1); // 1: nom, 2: upload, 3: résultat
+const step = ref(1); // 1: nom, 2: upload
 const uploading = ref(false);
-const qrCodeUrl = ref("");
-const fileId = ref("");
 const error = ref("");
 
 const checkNameInput = () => {
@@ -176,13 +147,8 @@ const uploadFile = async () => {
     });
 
     if (response.success) {
-      fileId.value = response.file.id;
-      // Récupérer le QR code
-      const qrResponse = await $fetch(`/api/qr/${response.file.id}`);
-      qrCodeUrl.value = qrResponse.qrCodeDataUrl;
-
-      // Passer à l'étape 3 (résultat)
-      step.value = 3;
+      // Rediriger vers la page de succès
+      await navigateTo(`/success/${response.file.id}`);
     }
   } catch (err) {
     console.error("Erreur upload:", err);
@@ -196,8 +162,6 @@ const resetForm = () => {
   step.value = 1;
   form.value.name = "";
   form.value.file = null;
-  qrCodeUrl.value = "";
-  fileId.value = "";
   error.value = "";
 
   // Reset du file input

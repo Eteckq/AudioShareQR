@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
   if (event.node.req.method !== 'POST') {
     throw createError({
       statusCode: 405,
-      statusMessage: 'Method Not Allowed'
+      message: 'Method Not Allowed'
     })
   }
 
@@ -52,7 +52,7 @@ export default defineEventHandler(async (event) => {
     if (!formData || formData.length === 0) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Aucun fichier fourni'
+        message: 'Aucun fichier fourni'
       })
     }
 
@@ -85,7 +85,7 @@ export default defineEventHandler(async (event) => {
     if (!filePath) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Aucun fichier audio fourni'
+        message: 'Aucun fichier audio fourni'
       })
     }
 
@@ -112,7 +112,7 @@ export default defineEventHandler(async (event) => {
     console.error('Erreur lors de l\'upload:', error)
     throw createError({
       statusCode: 500,
-      statusMessage: error.message || 'Erreur lors de l\'upload du fichier'
+      message: error.message || 'Erreur lors de l\'upload du fichier'
     })
   }
 })

@@ -13,7 +13,7 @@
         {{ file.name }}
       </h1>
 
-      <audio class="w-full" :src="audioUrl" controlsList="nodownload" controls>
+      <audio class="w-full" :src="audioUrl"  controlsList="nodownload" controls>
         Votre navigateur ne supporte pas l'élément audio.
       </audio>
     </div>

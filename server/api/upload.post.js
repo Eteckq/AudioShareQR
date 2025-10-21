@@ -24,6 +24,7 @@ const upload = multer({
   storage: storage,
   fileFilter: function (req, file, cb) {
     // Vérifier que c'est un fichier audio
+    // FIXME vuln
     const allowedTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/m4a']
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true)

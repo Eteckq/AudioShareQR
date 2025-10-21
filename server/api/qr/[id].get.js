@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
   try {
     // Générer le QR code avec la librairie qrcode
     const qrCodeDataUrl = await QRCode.toDataURL(audioUrl, {
-      width: 200,
+      width: 300,
       margin: 2,
       color: {
         dark: '#000000',

@@ -41,7 +41,7 @@
       </div>
       <button
         @click="uploadNewFile"
-        class="w-full border border-black py-2 text-black hover:bg-black hover:text-white transition-colors"
+        class="w-full border border-white p-2"
       >
         Retour à l'accueil
       </button>

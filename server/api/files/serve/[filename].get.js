@@ -22,8 +22,9 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Lire le fichier
-  const fileBuffer = fs.readFileSync(filePath)
+  // Obtenir les informations du fichier
+  const stats = fs.statSync(filePath)
+  const fileSize = stats.size
   
   // Déterminer le type MIME
   const ext = path.extname(filename).toLowerCase()
@@ -44,10 +45,41 @@ export default defineEventHandler(async (event) => {
       break
   }
 
-  // Définir les headers
+  // Définir les headers de base
   setHeader(event, 'Content-Type', mimeType)
-  setHeader(event, 'Content-Length', fileBuffer.length.toString())
-  setHeader(event, 'Cache-Control', 'public, max-age=31536000') // Cache 1 an
+  setHeader(event, 'Accept-Ranges', 'bytes')
+  setHeader(event, 'Cache-Control', 'public, max-age=31536000')
 
-  return fileBuffer
+  // Gérer les requêtes Range pour le seeking
+  const range = getHeader(event, 'range')
+  
+  if (range) {
+    // Parser le header Range (format: bytes=start-end)
+    const parts = range.replace(/bytes=/, "").split("-")
+    const start = parseInt(parts[0], 10)
+    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
+    
+    // Valider les valeurs
+    if (start >= fileSize) {
+      setHeader(event, 'Content-Range', `bytes */${fileSize}`)
+      throw createError({
+        statusCode: 416,
+        message: 'Requested Range Not Satisfiable'
+      })
+    }
+    
+    const chunksize = (end - start) + 1
+    const file = fs.createReadStream(filePath, { start, end })
+    
+    // Définir les headers pour la réponse partielle
+    setHeader(event, 'Content-Range', `bytes ${start}-${end}/${fileSize}`)
+    setHeader(event, 'Content-Length', chunksize.toString())
+    setResponseStatus(event, 206) // Partial Content
+    
+    return file
+  } else {
+    // Requête normale sans Range
+    setHeader(event, 'Content-Length', fileSize.toString())
+    return fs.createReadStream(filePath)
+  }
 })

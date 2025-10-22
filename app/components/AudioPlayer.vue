@@ -35,8 +35,10 @@
         <span>{{ formatTime(duration) }}</span>
       </div>
       <div 
-        class="w-full h-2 bg-gray-700 rounded-full cursor-pointer"
+        class="w-full h-2 bg-gray-700 rounded-full cursor-pointer select-none"
         @click="seekTo"
+        @mousedown="startDrag"
+        @touchstart="startTouchDrag"
         ref="progressBar"
       >
         <div 
@@ -76,6 +78,7 @@ const isPlaying = ref(false)
 const currentTime = ref(0)
 const duration = ref(0)
 const progressPercentage = ref(0)
+const isDragging = ref(false)
 
 const togglePlay = () => {
   if (!audioElement.value) return
@@ -92,10 +95,57 @@ const seekTo = (event) => {
   
   const rect = progressBar.value.getBoundingClientRect()
   const clickX = event.clientX - rect.left
-  const percentage = clickX / rect.width
+  const percentage = Math.max(0, Math.min(1, clickX / rect.width))
   const newTime = percentage * duration.value
   
   audioElement.value.currentTime = newTime
+}
+
+const startDrag = (event) => {
+  isDragging.value = true
+  seekTo(event)
+  
+  // Empêcher la sélection de texte pendant le glissement
+  event.preventDefault()
+}
+
+const handleDrag = (event) => {
+  if (!isDragging.value) return
+  
+  seekTo(event)
+  event.preventDefault()
+}
+
+const stopDrag = () => {
+  isDragging.value = false
+}
+
+// Gestionnaires pour les événements tactiles (mobile)
+const startTouchDrag = (event) => {
+  isDragging.value = true
+  const touch = event.touches[0]
+  const mouseEvent = new MouseEvent('mousedown', {
+    clientX: touch.clientX,
+    clientY: touch.clientY
+  })
+  seekTo(mouseEvent)
+  event.preventDefault()
+}
+
+const handleTouchDrag = (event) => {
+  if (!isDragging.value) return
+  
+  const touch = event.touches[0]
+  const mouseEvent = new MouseEvent('mousemove', {
+    clientX: touch.clientX,
+    clientY: touch.clientY
+  })
+  seekTo(mouseEvent)
+  event.preventDefault()
+}
+
+const stopTouchDrag = () => {
+  isDragging.value = false
 }
 
 const formatTime = (time) => {
@@ -111,6 +161,8 @@ const onLoadedMetadata = () => {
 }
 
 const onTimeUpdate = () => {
+  if (isDragging.value) return // Ne pas mettre à jour pendant le glissement
+  
   currentTime.value = audioElement.value.currentTime
   progressPercentage.value = (currentTime.value / duration.value) * 100
   emit('timeupdate', currentTime.value)
@@ -132,6 +184,21 @@ const onEnded = () => {
   progressPercentage.value = 0
   emit('ended')
 }
+
+// Ajouter les gestionnaires d'événements globaux
+onMounted(() => {
+  document.addEventListener('mousemove', handleDrag)
+  document.addEventListener('mouseup', stopDrag)
+  document.addEventListener('touchmove', handleTouchDrag, { passive: false })
+  document.addEventListener('touchend', stopTouchDrag)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('mousemove', handleDrag)
+  document.removeEventListener('mouseup', stopDrag)
+  document.removeEventListener('touchmove', handleTouchDrag)
+  document.removeEventListener('touchend', stopTouchDrag)
+})
 
 // Exposer des méthodes pour le contrôle externe
 defineExpose({

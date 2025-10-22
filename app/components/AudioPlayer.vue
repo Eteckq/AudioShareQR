@@ -31,7 +31,7 @@
     <!-- Barre de temps -->
     <div class="mb-8">
       <div class="flex justify-between text-sm text-gray-300 mb-2">
-        <span>{{ formatTime(currentTime) }}</span>
+        <span>{{ formatTime(isDragging ? (dragPercentage / 100) * duration : currentTime) }}</span>
         <span>{{ formatTime(duration) }}</span>
       </div>
       <div 
@@ -43,7 +43,7 @@
       >
         <div 
           class="h-full bg-purple-500 rounded-full transition-all duration-100"
-          :style="{ width: progressPercentage + '%' }"
+          :style="{ width: (isDragging ? dragPercentage : progressPercentage) + '%' }"
         ></div>
       </div>
     </div>
@@ -79,6 +79,7 @@ const currentTime = ref(0)
 const duration = ref(0)
 const progressPercentage = ref(0)
 const isDragging = ref(false)
+const dragPercentage = ref(0)
 
 const togglePlay = () => {
   if (!audioElement.value) return
@@ -101,9 +102,17 @@ const seekTo = (event) => {
   audioElement.value.currentTime = newTime
 }
 
+const getPercentageFromEvent = (event) => {
+  if (!progressBar.value) return 0
+  
+  const rect = progressBar.value.getBoundingClientRect()
+  const clickX = event.clientX - rect.left
+  return Math.max(0, Math.min(1, clickX / rect.width))
+}
+
 const startDrag = (event) => {
   isDragging.value = true
-  seekTo(event)
+  dragPercentage.value = getPercentageFromEvent(event) * 100
   
   // Empêcher la sélection de texte pendant le glissement
   event.preventDefault()
@@ -112,11 +121,20 @@ const startDrag = (event) => {
 const handleDrag = (event) => {
   if (!isDragging.value) return
   
-  seekTo(event)
+  // Mettre à jour seulement le pourcentage visuel pendant le glissement
+  dragPercentage.value = getPercentageFromEvent(event) * 100
   event.preventDefault()
 }
 
 const stopDrag = () => {
+  if (!isDragging.value) return
+  
+  // Maintenant mettre à jour le currentTime de l'audio
+  const newTime = (dragPercentage.value / 100) * duration.value
+  if (audioElement.value) {
+    audioElement.value.currentTime = newTime
+  }
+  
   isDragging.value = false
 }
 
@@ -128,7 +146,7 @@ const startTouchDrag = (event) => {
     clientX: touch.clientX,
     clientY: touch.clientY
   })
-  seekTo(mouseEvent)
+  dragPercentage.value = getPercentageFromEvent(mouseEvent) * 100
   event.preventDefault()
 }
 
@@ -140,11 +158,19 @@ const handleTouchDrag = (event) => {
     clientX: touch.clientX,
     clientY: touch.clientY
   })
-  seekTo(mouseEvent)
+  dragPercentage.value = getPercentageFromEvent(mouseEvent) * 100
   event.preventDefault()
 }
 
 const stopTouchDrag = () => {
+  if (!isDragging.value) return
+  
+  // Mettre à jour le currentTime de l'audio
+  const newTime = (dragPercentage.value / 100) * duration.value
+  if (audioElement.value) {
+    audioElement.value.currentTime = newTime
+  }
+  
   isDragging.value = false
 }
 

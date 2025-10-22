@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto w-full ">
+  <div class="mx-auto w-full h-full flex flex-col items-center justify-center">
     <div v-if="loading" class="text-center">
       <p class="text-black">Chargement...</p>
     </div>

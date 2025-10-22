@@ -8,7 +8,7 @@
       {{ error }}
     </div>
 
-    <div v-else-if="file" class="px-4">
+    <div v-else-if="file" class="px-4 w-full">
       <h1 class="text-2xl text-white font-normal mb-8 text-center">
         {{ file.name }}
       </h1>

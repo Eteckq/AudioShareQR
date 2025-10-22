@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-sm mx-auto">
+  <div class="max-w-sm mx-auto mt-20">
     <!-- Étape 1: Saisie du nom -->
     <div v-if="step === 1" class="space-y-6">
       <div>

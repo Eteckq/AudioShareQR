@@ -65,6 +65,24 @@ export function saveFile(fileData) {
   }
 }
 
+export function deleteFileById(id) {
+  try {
+    const files = getAllFiles()
+    const fileIndex = files.findIndex(file => file.id === id)
+    
+    if (fileIndex === -1) {
+      return false
+    }
+    
+    files.splice(fileIndex, 1)
+    fs.writeFileSync(DB_FILE, JSON.stringify(files, null, 2))
+    return true
+  } catch (error) {
+    console.error('Erreur lors de la suppression:', error)
+    return false
+  }
+}
+
 function generateId() {
   return Math.random().toString(36).substr(2, 9)
 }

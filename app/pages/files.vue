@@ -32,17 +32,6 @@
         </button>
       </div>
 
-      <!-- Liste vide -->
-      <div v-else-if="files.length === 0" class="text-center py-12">
-        <p class="text-gray-500 mb-4">Aucun fichier</p>
-        <NuxtLink 
-          to="/" 
-          class="px-4 py-2 bg-gray-900 text-white text-sm rounded hover:bg-gray-800"
-        >
-          Uploader un fichier
-        </NuxtLink>
-      </div>
-
       <!-- Liste des fichiers -->
       <div v-else class="space-y-2">
         <div 
@@ -56,6 +45,9 @@
                 {{ file.name || 'Sans nom' }}
               </h3>
               <p class="text-xs text-gray-500 mt-1">
+                {{ file.originalName }}
+              </p>
+              <p class="text-xs text-gray-600 mt-1">
                 {{ formatDate(file.createdAt) }}
               </p>
             </div>

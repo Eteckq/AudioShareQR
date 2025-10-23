@@ -70,7 +70,7 @@
         <span>{{ formatTime(duration) }}</span>
       </div>
       <div
-        class="w-full h-2 bg-gray-700 rounded-full transition-all duration-200"
+        class="w-full h-3 bg-gray-700 rounded-full transition-all duration-200"
         :class="isReady ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'"
         @click="seekTo"
         ref="progressBar"
@@ -129,7 +129,7 @@ const togglePlay = () => {
 };
 
 const seekTo = (event) => {
-  if (!audioElement.value || !progressBar.value) return;
+  if (!isReady.value || !audioElement.value || !progressBar.value) return;
 
   const rect = progressBar.value.getBoundingClientRect();
   const clickX = event.clientX - rect.left;

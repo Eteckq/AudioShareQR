@@ -9,10 +9,10 @@
     </div>
 
     <div v-else-if="file" class="px-4 w-full">
-      <h1 class="text-2xl text-white font-normal mb-8 text-center">
+      <h1 class="text-xl text-white font-normal mb-8 text-center">
         {{ file.name }}
       </h1>
-
+      <div class="h-[1px] w-1/12 bg-gray-50 mx-auto rounded-full"></div>
       <AudioPlayer :src="audioUrl" />
     </div>
   </div>

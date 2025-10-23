@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-sm mx-auto mt-20">
+  <div class="max-w-sm mx-auto mt-20 px-4">
     <!-- Affichage du résultat avec QR code -->
     <div v-if="fileData && qrCodeUrl" class="text-center space-y-6">
       <div class="space-y-4">

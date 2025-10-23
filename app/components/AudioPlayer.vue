@@ -1,32 +1,67 @@
 <template>
   <div class="w-full max-w-md mx-auto">
-
     <!-- Bouton de lecture principal -->
     <div class="flex justify-center my-16">
       <button
         @click="togglePlay"
-        class="w-24 h-24 border-2 border-purple-400 rounded-full flex items-center justify-center"
-        :class="{ 'animate-pulse': isPlaying }"
+        :disabled="!isReady"
+        class="w-24 h-24 border-2 rounded-full flex items-center justify-center transition-all duration-200"
+        :class="{
+          'border-purple-400 animate-pulse': isPlaying,
+          'border-purple-400 hover:border-purple-300': isReady && !isPlaying,
+          'border-gray-500 cursor-not-allowed opacity-50': !isReady,
+        }"
       >
-        <svg 
-          v-if="!isPlaying" 
-          class="w-16 h-16 text-purple-400 ml-1" 
-          fill="currentColor" 
+        <!-- Indicateur de chargement -->
+        <svg
+          v-if="isLoading"
+          class="w-8 h-8 text-gray-400 animate-spin"
+          fill="none"
           viewBox="0 0 24 24"
         >
-          <path d="M8 5v14l11-7z"/>
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
         </svg>
-        <svg 
-          v-else 
-          class="w-12 h-12 text-purple-400" 
-          fill="currentColor" 
+        <!-- Bouton Play -->
+        <svg
+          v-else-if="!isPlaying"
+          class="w-16 h-16 ml-1 transition-colors duration-200"
+          :class="isReady ? 'text-purple-400' : 'text-gray-400'"
+          fill="currentColor"
           viewBox="0 0 24 24"
         >
-          <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+          <path d="M8 5v14l11-7z" />
+        </svg>
+        <!-- Bouton Pause -->
+        <svg
+          v-else
+          class="w-12 h-12 text-purple-400"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
         </svg>
       </button>
     </div>
 
+    <!-- Message de statut -->
+    <div v-if="isLoading" class="text-center text-sm text-gray-400 mb-4">
+      Chargement de l'audio...
+    </div>
+    <div v-else-if="!isReady" class="text-center text-sm text-red-400 mb-4">
+      Erreur de chargement
+    </div>
 
     <!-- Barre de temps -->
     <div class="mb-8">
@@ -34,12 +69,13 @@
         <span>{{ formatTime(currentTime) }}</span>
         <span>{{ formatTime(duration) }}</span>
       </div>
-      <div 
-        class="w-full h-2 bg-gray-700 rounded-full cursor-pointer"
+      <div
+        class="w-full h-2 bg-gray-700 rounded-full transition-all duration-200"
+        :class="isReady ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'"
         @click="seekTo"
         ref="progressBar"
       >
-        <div 
+        <div
           class="h-full bg-purple-500 rounded-full transition-all duration-100"
           :style="{ width: progressPercentage + '%' }"
         ></div>
@@ -50,7 +86,10 @@
     <audio
       ref="audioElement"
       :src="src"
+      @loadstart="onLoadStart"
       @loadedmetadata="onLoadedMetadata"
+      @canplay="onCanPlay"
+      @error="onError"
       @timeupdate="onTimeUpdate"
       @ended="onEnded"
       @play="onPlay"
@@ -64,74 +103,92 @@
 const props = defineProps({
   src: {
     type: String,
-    required: true
-  }
-})
+    required: true,
+  },
+});
 
-const emit = defineEmits(['play', 'pause', 'ended', 'timeupdate'])
+const emit = defineEmits(["play", "pause", "ended", "timeupdate"]);
 
-const audioElement = ref(null)
-const progressBar = ref(null)
-const isPlaying = ref(false)
-const currentTime = ref(0)
-const duration = ref(0)
-const progressPercentage = ref(0)
+const audioElement = ref(null);
+const progressBar = ref(null);
+const isPlaying = ref(false);
+const currentTime = ref(0);
+const duration = ref(0);
+const progressPercentage = ref(0);
+const isLoading = ref(true);
+const isReady = ref(false);
 
 const togglePlay = () => {
-  if (!audioElement.value) return
-  
+  if (!audioElement.value || !isReady.value) return;
+
   if (isPlaying.value) {
-    audioElement.value.pause()
+    audioElement.value.pause();
   } else {
-    audioElement.value.play()
+    audioElement.value.play();
   }
-}
+};
 
 const seekTo = (event) => {
-  if (!audioElement.value || !progressBar.value) return
-  
-  const rect = progressBar.value.getBoundingClientRect()
-  const clickX = event.clientX - rect.left
-  const percentage = clickX / rect.width
-  const newTime = percentage * duration.value
-  
-  audioElement.value.currentTime = newTime
-}
+  if (!audioElement.value || !progressBar.value) return;
+
+  const rect = progressBar.value.getBoundingClientRect();
+  const clickX = event.clientX - rect.left;
+  const percentage = clickX / rect.width;
+  const newTime = percentage * duration.value;
+
+  audioElement.value.currentTime = newTime;
+};
 
 const formatTime = (time) => {
-  if (!time || isNaN(time)) return '0:00'
-  
-  const minutes = Math.floor(time / 60)
-  const seconds = Math.floor(time % 60)
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`
-}
+  if (!time || isNaN(time)) return "0:00";
+
+  const minutes = Math.floor(time / 60);
+  const seconds = Math.floor(time % 60);
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+};
+
+const onLoadStart = () => {
+  isLoading.value = true;
+  isReady.value = false;
+};
 
 const onLoadedMetadata = () => {
-  duration.value = audioElement.value.duration
-}
+  duration.value = audioElement.value.duration;
+};
+
+const onCanPlay = () => {
+  isLoading.value = false;
+  isReady.value = true;
+};
+
+const onError = () => {
+  isLoading.value = false;
+  isReady.value = false;
+  console.error("Erreur lors du chargement de l'audio");
+};
 
 const onTimeUpdate = () => {
-  currentTime.value = audioElement.value.currentTime
-  progressPercentage.value = (currentTime.value / duration.value) * 100
-  emit('timeupdate', currentTime.value)
-}
+  currentTime.value = audioElement.value.currentTime;
+  progressPercentage.value = (currentTime.value / duration.value) * 100;
+  emit("timeupdate", currentTime.value);
+};
 
 const onPlay = () => {
-  isPlaying.value = true
-  emit('play')
-}
+  isPlaying.value = true;
+  emit("play");
+};
 
 const onPause = () => {
-  isPlaying.value = false
-  emit('pause')
-}
+  isPlaying.value = false;
+  emit("pause");
+};
 
 const onEnded = () => {
-  isPlaying.value = false
-  currentTime.value = 0
-  progressPercentage.value = 0
-  emit('ended')
-}
+  isPlaying.value = false;
+  currentTime.value = 0;
+  progressPercentage.value = 0;
+  emit("ended");
+};
 
 // Exposer des méthodes pour le contrôle externe
 defineExpose({
@@ -140,10 +197,10 @@ defineExpose({
   togglePlay,
   seekTo: (time) => {
     if (audioElement.value) {
-      audioElement.value.currentTime = time
+      audioElement.value.currentTime = time;
     }
-  }
-})
+  },
+});
 </script>
 
 <style scoped>
@@ -152,11 +209,12 @@ defineExpose({
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
-    opacity: .8;
+    opacity: 0.8;
   }
 }
 </style>

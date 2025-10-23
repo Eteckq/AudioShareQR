@@ -13,7 +13,7 @@
         {{ file.name }}
       </h1>
 
-      <AudioPlayer :src="audioUrl" @ended="onEnded" />
+      <AudioPlayer :src="audioUrl" />
     </div>
   </div>
 </template>
@@ -41,7 +41,6 @@ const loadFile = async () => {
   }
 };
 
-const onEnded = () => {};
 
 // Charger le fichier au montage
 onMounted(() => {

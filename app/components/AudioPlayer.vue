@@ -7,8 +7,8 @@
         :disabled="!isReady"
         class="w-24 h-24 border-2 rounded-full flex items-center justify-center transition-all duration-200"
         :class="{
-          'border-purple-400 animate-pulse': isPlaying,
-          'border-purple-400 hover:border-purple-300': isReady && !isPlaying,
+          [`border-${color}-400 animate-pulse`]: isPlaying,
+          [`border-${color}-400 hover:border-${color}-300`]: isReady && !isPlaying,
           'border-gray-500 cursor-not-allowed opacity-50': !isReady,
         }"
       >
@@ -37,7 +37,7 @@
         <svg
           v-else-if="!isPlaying"
           class="w-16 h-16 ml-1 transition-colors duration-200"
-          :class="isReady ? 'text-purple-400' : 'text-gray-400'"
+          :class="isReady ? `text-${color}-400` : 'text-gray-400'"
           fill="currentColor"
           viewBox="0 0 24 24"
         >
@@ -46,7 +46,7 @@
         <!-- Bouton Pause -->
         <svg
           v-else
-          class="w-12 h-12 text-purple-400"
+          :class="`w-12 h-12 text-${color}-400`"
           fill="currentColor"
           viewBox="0 0 24 24"
         >
@@ -76,7 +76,7 @@
         ref="progressBar"
       >
         <div
-          class="h-full bg-purple-500 rounded-full transition-all duration-100"
+          :class="`h-full bg-${color}-500 rounded-full transition-all duration-100`"
           :style="{ width: progressPercentage + '%' }"
         ></div>
       </div>
@@ -88,6 +88,7 @@
       :src="src"
       @loadstart="onLoadStart"
       @loadedmetadata="onLoadedMetadata"
+      @loadeddata="onLoadedData"
       @canplay="onCanPlay"
       @error="onError"
       @timeupdate="onTimeUpdate"
@@ -95,6 +96,7 @@
       @play="onPlay"
       @pause="onPause"
       preload="metadata"
+      :autoplay="autoplay"
     ></audio>
   </div>
 </template>
@@ -105,9 +107,17 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  color: {
+    type: String,
+    default: 'purple'
+  },
+  autoplay: {
+    type: Boolean,
+    default: true
+  }
 });
 
-const emit = defineEmits(["play", "pause", "ended", "timeupdate"]);
+const emit = defineEmits(["play", "pause", "ended", "timeupdate", "loadeddata"]);
 
 const audioElement = ref(null);
 const progressBar = ref(null);
@@ -154,6 +164,10 @@ const onLoadStart = () => {
 
 const onLoadedMetadata = () => {
   duration.value = audioElement.value.duration;
+};
+
+const onLoadedData = () => {
+  emit("loadeddata");
 };
 
 const onCanPlay = () => {

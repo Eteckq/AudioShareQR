@@ -1,170 +1,235 @@
 <template>
-  <div class="max-w-sm mx-auto mt-20 px-5">
-    <!-- Étape 1: Saisie du nom -->
-    <div v-if="step === 1" class="space-y-6">
-      <div>
-        <input
-          v-model="form.name"
-          type="text"
-          required
-          class="w-full border-b bg-transparent py-2 placeholder-gray-400 focus:outline-none"
-          placeholder="Nom de l'audio"
-          @input="checkNameInput"
+  <div class="min-h-screen bg-black text-white">
+    <!-- Écran de connexion PIN -->
+    <div v-if="!isAuthenticated" class="min-h-screen flex items-center justify-center">
+      <div class="max-w-sm mx-auto px-5">
+        <div class="space-y-4">
+          <input
+            v-model="pinInput"
+            type="text"
+            maxlength="4"
+            class="w-full text-center text-2xl tracking-widest border-b bg-transparent py-3 placeholder-gray-400 focus:outline-none"
+            placeholder="••••"
+            @keyup.enter="verifyPin"
+          />
+          
+          <button
+            @click="verifyPin"
+            :disabled="pinInput.length !== 4"
+            class="w-full border rounded py-3 hover:bg-white hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Accéder
+          </button>
+        </div>
+        
+        <div v-if="pinError" class="mt-4 text-red-400 text-sm text-center">
+          {{ pinError }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Interface principale après authentification -->
+    <div v-else class="min-h-screen">
+      <!-- Header -->
+      <PageHeader 
+        title="Gestion des Playlists"
+        :show-logout="true"
+        @logout="logout"
+      />
+
+      <!-- Contenu principal -->
+      <div class="p-6">
+        <!-- Boutons d'action -->
+        <ActionButtonsMain 
+          :buttons="mainButtons"
+          @action="handleMainAction"
+        />
+
+        <!-- Liste des playlists -->
+        <div v-if="loading" class="text-center py-8">
+          <p class="text-gray-400">Chargement des playlists...</p>
+        </div>
+
+        <EmptyState 
+          v-else-if="playlists.length === 0"
+          message="Aucune playlist créée"
+        />
+
+        <CardGrid 
+          v-else
+          :items="playlists"
+          @item-click="goToPlaylist"
         />
       </div>
-      <button
-        @click="nextStep"
-        :disabled="!form.name.trim()"
-        class="w-full border rounded py-2 hover:bg-black hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        Continuer
-      </button>
     </div>
 
-    <!-- Étape 2: Upload du fichier -->
-    <div v-if="step === 2" class="space-y-6">
-      <div class="text-center">
-        <p class="text-md text-gray-300 mb-4">
-          Fichier: <strong>{{ form.name }}</strong>
-        </p>
-      </div>
-
-      <div
-        class=" text-slate-500 font-semibold text-base rounded max-w-md h-52 cursor-pointer border-2 border-gray-300 border-dashed mx-auto hover:border-gray-400 transition-colors text-center flex flex-col items-center justify-center min-w-72"
-      >
-        <!-- Animation d'upload -->
-        <div v-if="uploading">
-          <div
-            class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black mb-4"
-          ></div>
-          <p class="text-gray-400">Upload en cours...</p>
-        </div>
-        <label
-          v-else
-          class="flex flex-col items-center justify-center p-8"
-          for="fileInput"
+    <!-- Modal de création de playlist -->
+    <Modal
+      :is-open="showCreatePlaylist"
+      title="Créer une playlist"
+      @close="cancelCreatePlaylist"
+    >
+      <FormFields
+        name-label="Nom de la playlist"
+        name-placeholder="Ma playlist"
+        :show-description="true"
+        description-label="Description (optionnel)"
+        description-placeholder="Description de la playlist"
+        @name-change="onNameChange"
+        @description-change="onDescriptionChange"
+      />
+      
+      <template #footer>
+        <button
+          @click="createPlaylist"
+          :disabled="!newPlaylist.name"
+          class="flex-1 border rounded py-2 hover:bg-white hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-11 mb-3 fill-gray-500"
-            viewBox="0 0 32 32"
-          >
-            <path
-              d="M23.75 11.044a7.99 7.99 0 0 0-15.5-.009A8 8 0 0 0 9 27h3a1 1 0 0 0 0-2H9a6 6 0 0 1-.035-12 1.038 1.038 0 0 0 1.1-.854 5.991 5.991 0 0 1 11.862 0A1.08 1.08 0 0 0 23 13a6 6 0 0 1 0 12h-3a1 1 0 0 0 0 2h3a8 8 0 0 0 .75-15.956z"
-              data-original="#000000"
-            />
-            <path
-              d="M20.293 19.707a1 1 0 0 0 1.414-1.414l-5-5a1 1 0 0 0-1.414 0l-5 5a1 1 0 0 0 1.414 1.414L15 16.414V29a1 1 0 0 0 2 0V16.414z"
-              data-original="#000000"
-            />
-          </svg>
-          Sélectionner un fichier audio
-
-          <input
-            ref="fileInput"
-            id="fileInput"
-            type="file"
-            accept="audio/*"
-            required
-            @change="handleFileChange"
-            class="hidden"
-          />
-        </label>
+          Créer
+        </button>
+        <button
+          @click="cancelCreatePlaylist"
+          class="flex-1 border rounded py-2 hover:bg-gray-800 transition-colors"
+        >
+          Annuler
+        </button>
+      </template>
+      
+      <div v-if="createError" class="mt-4 text-red-400 text-sm">
+        {{ createError }}
       </div>
-
-      <button
-        @click="resetToStep1"
-        class="w-full text-gray-500 py-2 hover:text-gray-700 transition-colors"
-      >
-        ← Retour
-      </button>
-    </div>
-
-    <div v-if="error" class="mt-4 text-red-600 text-sm text-center">
-      {{ error }}
-    </div>
+    </Modal>
   </div>
 </template>
 
 <script setup>
-const form = ref({
-  name: "",
-  file: null,
-});
+const { isAuthenticated, checkAuth, setAuth } = useAuth()
 
-const step = ref(1); // 1: nom, 2: upload
-const uploading = ref(false);
-const error = ref("");
+const pinInput = ref('')
+const pinError = ref('')
+const playlists = ref([])
+const loading = ref(false)
+const showCreatePlaylist = ref(false)
+const createError = ref('')
 
-const checkNameInput = () => {
-  error.value = "";
-};
+const newPlaylist = ref({
+  name: '',
+  description: ''
+})
 
-const nextStep = () => {
-  if (form.value.name.trim()) {
-    step.value = 2;
-    error.value = "";
+// Vérifier l'authentification au chargement de la page
+onMounted(() => {
+  if (checkAuth()) {
+    loadPlaylists()
   }
-};
+})
 
-const resetToStep1 = () => {
-  step.value = 1;
-  form.value.file = null;
-  error.value = "";
-  // Reset du file input
-  const fileInput = document.getElementById("fileInput");
-  if (fileInput) fileInput.value = "";
-};
 
-const handleFileChange = async (event) => {
-  form.value.file = event.target.files[0];
-  error.value = "";
-
-  // Upload automatiquement le fichier dès qu'il est sélectionné
-  if (form.value.file) {
-    await uploadFile();
-  }
-};
-
-const uploadFile = async () => {
-  if (!form.value.file || !form.value.name) {
-    error.value = "Veuillez sélectionner un fichier";
-    return;
-  }
-
-  uploading.value = true;
-  error.value = "";
-
+const verifyPin = async () => {
+  if (pinInput.value.length !== 4) return
+  
   try {
-    const formData = new FormData();
-    formData.append("name", form.value.name);
-    formData.append("file", form.value.file);
-
-    const response = await $fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    });
-
+    const response = await $fetch('/api/auth/pin', {
+      method: 'POST',
+      body: { pin: pinInput.value }
+    })
+    
     if (response.success) {
-      // Rediriger vers la page de succès
-      await navigateTo(`/success/${response.file.id}`);
+      setAuth(true)
+      await loadPlaylists()
+    } else {
+      pinError.value = 'Code PIN incorrect'
+      pinInput.value = ''
     }
-  } catch (err) {
-    console.error("Erreur upload:", err);
-    error.value = err.data?.message || "Erreur lors de l'upload du fichier";
-  } finally {
-    uploading.value = false;
+  } catch (error) {
+    pinError.value = 'Erreur de connexion'
   }
-};
+}
 
-const resetForm = () => {
-  step.value = 1;
-  form.value.name = "";
-  form.value.file = null;
-  error.value = "";
+const logout = () => {
+  setAuth(false)
+  pinInput.value = ''
+  pinError.value = ''
+  playlists.value = []
+}
 
-  // Reset du file input
-  const fileInput = document.getElementById("fileInput");
-  if (fileInput) fileInput.value = "";
-};
+const loadPlaylists = async () => {
+  loading.value = true
+  try {
+    const response = await $fetch('/api/playlists')
+    playlists.value = response
+  } catch (error) {
+    console.error('Erreur chargement playlists:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+const createPlaylist = async () => {
+  if (!newPlaylist.value.name) return
+  
+  try {
+    const response = await $fetch('/api/playlists', {
+      method: 'POST',
+      body: newPlaylist.value
+    })
+    
+    if (response.success) {
+      await loadPlaylists()
+      cancelCreatePlaylist()
+    }
+  } catch (error) {
+    createError.value = error.data?.message || 'Erreur lors de la création'
+  }
+}
+
+const onNameChange = (name) => {
+  newPlaylist.value.name = name
+}
+
+const onDescriptionChange = (description) => {
+  newPlaylist.value.description = description
+}
+
+const cancelCreatePlaylist = () => {
+  showCreatePlaylist.value = false
+  newPlaylist.value = { name: '', description: '' }
+  createError.value = ''
+}
+
+const mainButtons = ref([
+  {
+    id: 'create-playlist',
+    text: '+ Créer une nouvelle playlist',
+    class: 'hover:bg-white hover:text-black'
+  },
+  {
+    id: 'upload-individual',
+    text: 'Upload audio individuel',
+    class: 'hover:bg-gray-800'
+  }
+])
+
+const handleMainAction = (actionId) => {
+  switch (actionId) {
+    case 'create-playlist':
+      showCreatePlaylist.value = true
+      break
+    case 'upload-individual':
+      goToUpload()
+      break
+  }
+}
+
+const goToUpload = () => {
+  navigateTo('/upload')
+}
+
+const goToPlaylist = (playlist) => {
+  navigateTo(`/admin/playlist/${playlist.id}`)
+}
+
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString('fr-FR')
+}
 </script>

@@ -42,7 +42,12 @@
                 <div v-else class="w-3 h-3 border border-gray-400 rounded-sm"></div>
               </div>
               <div class="flex-1 min-w-0">
-                <h3 class="text-sm font-medium ">{{ file.name }}</h3>
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-medium">{{ file.name }}</h3>
+                  <span v-if="fileDurations[file.id]" class="text-xs text-gray-400 ml-2 flex-shrink-0">
+                    {{ formatTime(fileDurations[file.id]) }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -81,6 +86,7 @@ const currentFile = ref(null)
 const currentFileId = ref(null)
 const isPlaying = ref(false)
 const audioUrl = ref('')
+const fileDurations = ref({})
 
 // Computed properties pour la navigation
 const hasPrevious = computed(() => {
@@ -100,6 +106,11 @@ const loadPlaylist = async () => {
   try {
     const response = await $fetch(`/api/playlists/${playlistId}`)
     playlist.value = response
+    
+    // Charger les durées des fichiers audio
+    if (playlist.value.files) {
+      await loadFileDurations()
+    }
     
     // Si c'est un fichier spécifique dans l'URL, le charger directement
     const fileId = route.query.file
@@ -181,6 +192,44 @@ const playNext = () => {
 }
 
 
+
+const loadFileDurations = async () => {
+  if (!playlist.value?.files) return
+  
+  const promises = playlist.value.files.map(async (file) => {
+    try {
+      const audioUrl = `/api/files/serve/${file.path.split('/').pop()}`
+      const duration = await getAudioDuration(audioUrl)
+      fileDurations.value[file.id] = duration
+    } catch (error) {
+      console.error(`Erreur lors du chargement de la durée pour ${file.name}:`, error)
+      fileDurations.value[file.id] = null
+    }
+  })
+  
+  await Promise.all(promises)
+}
+
+const getAudioDuration = (url) => {
+  return new Promise((resolve, reject) => {
+    const audio = new Audio()
+    audio.addEventListener('loadedmetadata', () => {
+      resolve(audio.duration)
+    })
+    audio.addEventListener('error', () => {
+      reject(new Error('Erreur de chargement'))
+    })
+    audio.src = url
+  })
+}
+
+const formatTime = (time) => {
+  if (!time || isNaN(time)) return "0:00"
+  
+  const minutes = Math.floor(time / 60)
+  const seconds = Math.floor(time % 60)
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`
+}
 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('fr-FR')

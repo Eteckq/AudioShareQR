@@ -101,13 +101,7 @@
       </div>
     </div>
 
-    <!-- Messages de statut compacts -->
-    <div v-if="isLoading" class="text-xs text-gray-400 text-center py-1">
-      Chargement...
-    </div>
-    <div v-else-if="!isReady" class="text-xs text-red-400 text-center py-1">
-      Erreur de chargement
-    </div>
+
 
     <!-- Audio élément caché -->
     <audio

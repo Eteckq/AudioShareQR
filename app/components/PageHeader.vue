@@ -20,7 +20,10 @@
         </p>
       </div>
       
-
+      <!-- Actions -->
+      <div class="flex items-center space-x-3">
+        <slot name="actions"></slot>
+      </div>
     </div>
   </div>
 </template>

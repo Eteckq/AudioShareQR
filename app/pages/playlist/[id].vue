@@ -113,7 +113,7 @@ const loadPlaylist = async () => {
         await nextTick()
         setTimeout(() => {
           startAutoplay()
-        }, 800)
+        }, 200)
       }
     }
   } catch (err) {

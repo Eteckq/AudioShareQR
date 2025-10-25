@@ -7,10 +7,14 @@
         @click="$emit('previous')"
         :disabled="!hasPrevious"
         class="w-10 h-10 flex items-center justify-center transition-colors duration-200"
-        :class="hasPrevious ? 'text-gray-300 hover:text-white' : 'text-gray-600 cursor-not-allowed'"
+        :class="
+          hasPrevious
+            ? 'text-gray-300 hover:text-white'
+            : 'text-gray-600 cursor-not-allowed'
+        "
       >
         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+          <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
         </svg>
       </button>
 
@@ -56,12 +60,7 @@
           <path d="M8 5v14l11-7z" />
         </svg>
         <!-- Bouton Pause -->
-        <svg
-          v-else
-          class="w-7 h-7"
-          fill="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg v-else class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
           <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
         </svg>
       </button>
@@ -71,10 +70,14 @@
         @click="$emit('next')"
         :disabled="!hasNext"
         class="w-10 h-10 flex items-center justify-center transition-colors duration-200"
-        :class="hasNext ? 'text-gray-300 hover:text-white' : 'text-gray-600 cursor-not-allowed'"
+        :class="
+          hasNext
+            ? 'text-gray-300 hover:text-white'
+            : 'text-gray-600 cursor-not-allowed'
+        "
       >
         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+          <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
         </svg>
       </button>
     </div>
@@ -133,19 +136,27 @@ const props = defineProps({
   },
   autoplay: {
     type: Boolean,
-    default: true
+    default: true,
   },
   hasPrevious: {
     type: Boolean,
-    default: false
+    default: false,
   },
   hasNext: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
-const emit = defineEmits(["play", "pause", "ended", "timeupdate", "loadeddata", "previous", "next"]);
+const emit = defineEmits([
+  "play",
+  "pause",
+  "ended",
+  "timeupdate",
+  "loadeddata",
+  "previous",
+  "next",
+]);
 
 const audioElement = ref(null);
 const progressBar = ref(null);
@@ -210,9 +221,11 @@ const onError = () => {
 };
 
 const onTimeUpdate = () => {
-  currentTime.value = audioElement.value.currentTime;
-  progressPercentage.value = (currentTime.value / duration.value) * 100;
-  emit("timeupdate", currentTime.value);
+  if (audioElement.value) {
+    currentTime.value = audioElement.value.currentTime;
+    progressPercentage.value = (currentTime.value / duration.value) * 100;
+    emit("timeupdate", currentTime.value);
+  }
 };
 
 const onPlay = () => {

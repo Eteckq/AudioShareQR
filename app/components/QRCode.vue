@@ -27,7 +27,7 @@
           <img :src="qrData.qrCodeDataUrl" alt="QR Code" class="border rounded" />
         </div>
         
-        <p v-if="showUrl" class="text-sm text-gray-400 break-all">{{ qrData.url }}</p>
+        <NuxtLink  v-if="showUrl" :to="qrData.url" class="text-sm text-gray-300 underline underline-offset-4">Ecouter</NuxtLink>
         
         <div v-if="showActions" class="flex gap-2 justify-center">
           <button

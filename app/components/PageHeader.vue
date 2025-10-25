@@ -20,19 +20,7 @@
         </p>
       </div>
       
-      <!-- Actions à droite -->
-      <div class="flex items-center gap-3">
-        <slot name="actions">
-          <!-- Actions par défaut -->
-          <button
-            v-if="showLogout"
-            @click="logout"
-            class="text-gray-400 hover:text-white transition-colors text-sm"
-          >
-            Déconnexion
-          </button>
-        </slot>
-      </div>
+
     </div>
   </div>
 </template>

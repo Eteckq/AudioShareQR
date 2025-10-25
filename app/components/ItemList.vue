@@ -1,19 +1,19 @@
 <template>
-  <div class="space-y-2">
+  <div class="space-y-2 text-white">
     <div 
       v-for="item in items" 
       :key="item.id"
-      class="bg-white border border-gray-200 rounded-lg p-4"
+      class=" border border-gray-200 rounded-lg p-4"
     >
       <div class="flex items-center justify-between">
         <div class="flex-1 min-w-0">
-          <h3 class="text-sm font-medium text-gray-900 truncate">
+          <h3 class="text-sm font-medium text-gray-200 truncate">
             {{ item.name || 'Sans nom' }}
           </h3>
-          <p v-if="item.originalName" class="text-xs text-gray-500 mt-1">
+          <p v-if="item.originalName" class="text-xs text-gray-200 mt-1">
             {{ item.originalName }}
           </p>
-          <p v-if="item.description" class="text-xs text-gray-500 mt-1">
+          <p v-if="item.description" class="text-xs text-gray-300 mt-1">
             {{ item.description }}
           </p>
           <p class="text-xs text-gray-600 mt-1">

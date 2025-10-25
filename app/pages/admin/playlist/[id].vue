@@ -49,10 +49,9 @@
                 {{ file.originalName }}
               </p>
               <div class="flex gap-4 text-sm text-gray-500">
-                <span>{{ formatDate(file.createdAt) }}</span>
                 <QRCode 
                   :file-id="file.id"
-                  button-text="Générer QR Code"
+                  button-text="Afficher le QR Code"
                 />
                 <button
                   @click="deleteFile(file.id)"

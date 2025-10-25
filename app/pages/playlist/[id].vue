@@ -22,33 +22,27 @@
       </div>
 
       <!-- Contenu principal -->
-      <div class="px-6 py-4">
+      <div class="px-6 py-4 ">
         <div v-if="playlist.files?.length === 0" class="text-center py-8">
           <p class="text-gray-400">Aucun audio dans cette playlist</p>
         </div>
 
-        <div v-else class="space-y-4">
+        <div v-else class="space-y-2 ">
           <div
             v-for="(file, index) in playlist.files"
             :key="file.id"
-            class="border rounded p-4 cursor-pointer hover:bg-gray-900 transition-colors"
+            class="flex items-center justify-between py-3 px-4 cursor-pointer hover:bg-gray-900 transition-colors rounded"
             :class="{ 'bg-gray-900': currentFileId === file.id }"
             @click="playFile(file)"
           >
-            <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 flex items-center justify-center">
-                  <div v-if="currentFileId === file.id && isPlaying" class="w-4 h-4 bg-green-500 rounded-sm animate-pulse"></div>
-                  <div v-else-if="currentFileId === file.id" class="w-4 h-4 bg-gray-500 rounded-sm"></div>
-                  <div v-else class="w-4 h-4 border border-gray-400 rounded-sm"></div>
-                </div>
-                <div>
-                  <h3 class="font-medium">{{ file.name }}</h3>
-                  <p class="text-gray-400 text-sm">{{ file.originalName }}</p>
-                </div>
+            <div class="flex items-center space-x-3 flex-1 min-w-0">
+              <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
+                <div v-if="currentFileId === file.id && isPlaying" class="w-3 h-3 bg-green-500 rounded-sm animate-pulse"></div>
+                <div v-else-if="currentFileId === file.id" class="w-3 h-3 bg-gray-500 rounded-sm"></div>
+                <div v-else class="w-3 h-3 border border-gray-400 rounded-sm"></div>
               </div>
-              <div class="text-sm text-gray-500">
-                {{ formatDate(file.createdAt) }}
+              <div class="flex-1 min-w-0">
+                <h3 class="text-sm font-medium ">{{ file.name }}</h3>
               </div>
             </div>
           </div>
@@ -57,14 +51,18 @@
 
       <!-- Player audio -->
       <div v-if="currentFile" class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 p-4">
-        <div class="max-w-md mx-auto">
-          <h3 class="text-sm font-medium mb-2">{{ currentFile.name }}</h3>
+        <div class="max-w-4xl mx-auto">
+          <h3 class="text-sm font-medium mb-3 text-center">{{ currentFile.name }}</h3>
           <AudioPlayer 
             :src="audioUrl" 
             :key="currentFileId"
+            :has-previous="hasPrevious"
+            :has-next="hasNext"
             @play="onPlay"
             @pause="onPause"
             @ended="onEnded"
+            @previous="playPrevious"
+            @next="playNext"
           />
         </div>
       </div>
@@ -83,6 +81,19 @@ const currentFile = ref(null)
 const currentFileId = ref(null)
 const isPlaying = ref(false)
 const audioUrl = ref('')
+
+// Computed properties pour la navigation
+const hasPrevious = computed(() => {
+  if (!playlist.value?.files || !currentFileId.value) return false
+  const currentIndex = playlist.value.files.findIndex(f => f.id === currentFileId.value)
+  return currentIndex > 0
+})
+
+const hasNext = computed(() => {
+  if (!playlist.value?.files || !currentFileId.value) return false
+  const currentIndex = playlist.value.files.findIndex(f => f.id === currentFileId.value)
+  return currentIndex < playlist.value.files.length - 1
+})
 
 const loadPlaylist = async () => {
   loading.value = true
@@ -146,17 +157,27 @@ const onPause = () => {
 const onEnded = () => {
   isPlaying.value = false
   // Auto-play next file
-  if (playlist.value?.files) {
-    const currentIndex = playlist.value.files.findIndex(f => f.id === currentFileId.value)
-    const nextIndex = (currentIndex + 1) % playlist.value.files.length
-    if (nextIndex !== currentIndex) {
-      playFile(playlist.value.files[nextIndex])
-      // Démarrer automatiquement le fichier suivant
-      setTimeout(() => {
-        startAutoplay()
-      }, 100)
-    }
-  }
+  playNext()
+}
+
+const playPrevious = () => {
+  if (!hasPrevious.value) return
+  const currentIndex = playlist.value.files.findIndex(f => f.id === currentFileId.value)
+  const previousFile = playlist.value.files[currentIndex - 1]
+  playFile(previousFile)
+  setTimeout(() => {
+    startAutoplay()
+  }, 100)
+}
+
+const playNext = () => {
+  if (!hasNext.value) return
+  const currentIndex = playlist.value.files.findIndex(f => f.id === currentFileId.value)
+  const nextFile = playlist.value.files[currentIndex + 1]
+  playFile(nextFile)
+  setTimeout(() => {
+    startAutoplay()
+  }, 100)
 }
 
 

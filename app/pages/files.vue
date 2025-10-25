@@ -1,12 +1,12 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-black text-white">
     <!-- Header simple -->
-    <div class="bg-white border-b border-gray-200 px-4 py-3">
+    <div class="bg-gray-900 border-b border-gray-800 px-4 py-3">
       <div class="flex items-center justify-between">
-        <h1 class="text-xl font-semibold text-gray-900">Audios uploadés</h1>
+        <h1 class="text-xl font-semibold text-white">Audios uploadés</h1>
         <NuxtLink 
           to="/" 
-          class="text-sm text-gray-600 hover:text-gray-900"
+          class="text-sm text-gray-400 hover:text-white"
         >
           ← Retour
         </NuxtLink>
@@ -34,7 +34,7 @@
           <!-- Écouter -->
           <NuxtLink 
             :to="`/audio/${item.id}`"
-            class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+            class="px-2 py-1 text-xs bg-gray-700 text-gray-300 rounded hover:bg-gray-600"
           >
             Écouter
           </NuxtLink>
@@ -42,7 +42,7 @@
           <!-- QR Code -->
           <NuxtLink 
             :to="`/success/${item.id}`"
-            class="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+            class="px-2 py-1 text-xs bg-blue-900 text-blue-300 rounded hover:bg-blue-800"
           >
             QR
           </NuxtLink>
@@ -50,7 +50,7 @@
           <!-- Supprimer -->
           <button 
             @click="confirmDelete(item)"
-            class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200"
+            class="px-2 py-1 text-xs bg-red-900 text-red-300 rounded hover:bg-red-800"
           >
             Suppr
           </button>
@@ -64,14 +64,14 @@
       title="Supprimer ?"
       @close="cancelDelete"
     >
-      <p class="text-sm text-gray-600 mb-6">
+      <p class="text-sm text-gray-400 mb-6">
         Supprimer "{{ fileToDelete?.name || 'Sans nom' }}" ?
       </p>
       
       <template #footer>
         <button 
           @click="cancelDelete"
-          class="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+          class="px-4 py-2 text-sm text-gray-300 bg-gray-700 rounded hover:bg-gray-600"
         >
           Annuler
         </button>

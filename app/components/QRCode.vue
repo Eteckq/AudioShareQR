@@ -12,7 +12,7 @@
     <!-- Modal QR Code -->
     <Modal
       :is-open="showModal"
-      title="QR Code généré"
+      title="QR Code"
       @close="closeModal"
     >
       <!-- Loading -->
@@ -64,7 +64,7 @@ const props = defineProps({
   },
   buttonText: {
     type: String,
-    default: "Générer QR Code"
+    default: "QR Code"
   },
   showUrl: {
     type: Boolean,

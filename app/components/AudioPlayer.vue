@@ -1,21 +1,34 @@
 <template>
-  <div class="w-full max-w-md mx-auto">
-    <!-- Bouton de lecture principal -->
-    <div class="flex justify-center my-16">
+  <div class="w-full">
+    <!-- Contrôles de navigation -->
+    <div class="flex items-center justify-center space-x-6">
+      <!-- Bouton précédent -->
+      <button
+        @click="$emit('previous')"
+        :disabled="!hasPrevious"
+        class="w-10 h-10 flex items-center justify-center transition-colors duration-200"
+        :class="hasPrevious ? 'text-gray-300 hover:text-white' : 'text-gray-600 cursor-not-allowed'"
+      >
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+        </svg>
+      </button>
+
+      <!-- Bouton play/pause principal -->
       <button
         @click="togglePlay"
         :disabled="!isReady"
-        class="w-24 h-24 border-2 rounded-full flex items-center justify-center transition-all duration-200"
+        class="w-14 h-14 flex items-center rounded-full border border-blue-400 justify-center transition-all duration-200"
         :class="{
-          [`border-${color}-400 animate-pulse`]: isPlaying,
-          [`border-${color}-400 hover:border-${color}-300`]: isReady && !isPlaying,
-          'border-gray-500 cursor-not-allowed opacity-50': !isReady,
+          [`text-blue-400`]: isReady && isPlaying,
+          [`text-gray-300 hover:text-white`]: isReady && !isPlaying,
+          'text-gray-600 cursor-not-allowed': !isReady,
         }"
       >
         <!-- Indicateur de chargement -->
         <svg
           v-if="isLoading"
-          class="w-8 h-8 text-gray-400 animate-spin"
+          class="w-7 h-7 animate-spin"
           fill="none"
           viewBox="0 0 24 24"
         >
@@ -36,8 +49,7 @@
         <!-- Bouton Play -->
         <svg
           v-else-if="!isPlaying"
-          class="w-16 h-16 ml-1 transition-colors duration-200"
-          :class="isReady ? `text-${color}-400` : 'text-gray-400'"
+          class="w-7 h-7 ml-0.5"
           fill="currentColor"
           viewBox="0 0 24 24"
         >
@@ -46,40 +58,52 @@
         <!-- Bouton Pause -->
         <svg
           v-else
-          :class="`w-12 h-12 text-${color}-400`"
+          class="w-7 h-7"
           fill="currentColor"
           viewBox="0 0 24 24"
         >
           <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
         </svg>
       </button>
+
+      <!-- Bouton suivant -->
+      <button
+        @click="$emit('next')"
+        :disabled="!hasNext"
+        class="w-10 h-10 flex items-center justify-center transition-colors duration-200"
+        :class="hasNext ? 'text-gray-300 hover:text-white' : 'text-gray-600 cursor-not-allowed'"
+      >
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+        </svg>
+      </button>
     </div>
 
-    <!-- Message de statut -->
-    <div v-if="isLoading" class="text-center text-sm text-gray-400 mb-4">
-      Chargement de l'audio...
-    </div>
-    <div v-else-if="!isReady" class="text-center text-sm text-red-400 mb-4">
-      Erreur de chargement
-    </div>
-
-    <!-- Barre de temps -->
-    <div class="mb-8">
-      <div class="flex justify-between text-sm text-gray-300 mb-2">
+    <!-- Barre de progression -->
+    <div class="px-4 pb-4">
+      <div class="flex justify-between text-sm text-gray-400 mb-2">
         <span>{{ formatTime(currentTime) }}</span>
         <span>{{ formatTime(duration) }}</span>
       </div>
       <div
-        class="w-full h-3 bg-gray-700 rounded-full transition-all duration-200"
+        class="w-full h-2 bg-gray-700 rounded-full transition-all duration-200"
         :class="isReady ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'"
         @click="seekTo"
         ref="progressBar"
       >
         <div
-          :class="`h-full bg-${color}-500 rounded-full transition-all duration-100`"
+          :class="`h-full bg-blue-500 rounded-full transition-all duration-100`"
           :style="{ width: progressPercentage + '%' }"
         ></div>
       </div>
+    </div>
+
+    <!-- Messages de statut compacts -->
+    <div v-if="isLoading" class="text-xs text-gray-400 text-center py-1">
+      Chargement...
+    </div>
+    <div v-else-if="!isReady" class="text-xs text-red-400 text-center py-1">
+      Erreur de chargement
     </div>
 
     <!-- Audio élément caché -->
@@ -107,17 +131,21 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  color: {
-    type: String,
-    default: 'purple'
-  },
   autoplay: {
     type: Boolean,
     default: true
+  },
+  hasPrevious: {
+    type: Boolean,
+    default: false
+  },
+  hasNext: {
+    type: Boolean,
+    default: false
   }
 });
 
-const emit = defineEmits(["play", "pause", "ended", "timeupdate", "loadeddata"]);
+const emit = defineEmits(["play", "pause", "ended", "timeupdate", "loadeddata", "previous", "next"]);
 
 const audioElement = ref(null);
 const progressBar = ref(null);

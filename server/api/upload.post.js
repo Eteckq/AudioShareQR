@@ -62,8 +62,6 @@ export default defineEventHandler(async (event) => {
     let fileData = null
     let filePath = ''
 
-    let playlistId = ''
-
     // Parser les données du formulaire
     for (const item of formData) {
       if (item.name === 'file' && item.filename) {
@@ -82,8 +80,6 @@ export default defineEventHandler(async (event) => {
         fileName = item.filename
       } else if (item.name === 'name') {
         userName = item.data.toString()
-      } else if (item.name === 'playlistId') {
-        playlistId = item.data.toString()
       }
     }
 
@@ -101,8 +97,7 @@ export default defineEventHandler(async (event) => {
     const savedFile = saveFile({
       name: userName,
       path: relativePath,
-      originalName: fileName,
-      playlistId: playlistId || null
+      originalName: fileName
     })
 
     console.log(`File "${userName}" saved: ${savedFile.id}`);

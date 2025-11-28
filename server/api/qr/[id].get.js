@@ -22,15 +22,8 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // URL de redirection selon le type
-    let redirectUrl
-    if (file.playlistId) {
-      // Si le fichier appartient à une playlist, rediriger vers la playlist avec le fichier spécifique
-      redirectUrl = `${getRequestURL(event).origin}/playlist/${file.playlistId}?file=${id}`
-    } else {
-      // Sinon, rediriger vers la page audio individuelle
-      redirectUrl = `${getRequestURL(event).origin}/audio/${id}`
-    }
+    // URL de redirection vers la page audio individuelle
+    const redirectUrl = `${getRequestURL(event).origin}/audio/${id}`
     
     // Générer le QR code avec la librairie qrcode
     const qrCodeDataUrl = await QRCode.toDataURL(redirectUrl, {

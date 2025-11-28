@@ -44,7 +44,7 @@
       <input
         ref="fileInput"
         type="file"
-        accept="audio/*"
+        accept="*"
         @change="handleFileChange"
         class="hidden"
       />
@@ -105,12 +105,6 @@ const props = defineProps({
     default: "Uploader"
   },
   
-  // Configuration de l'upload
-  playlistId: {
-    type: String,
-    default: null
-  },
-  
   // Classes CSS personnalisables
   fileZoneClass: {
     type: String,
@@ -169,10 +163,6 @@ const handleSubmit = async () => {
     const formData = new FormData()
     formData.append('name', form.value.name)
     formData.append('file', form.value.file)
-    
-    if (props.playlistId) {
-      formData.append('playlistId', props.playlistId)
-    }
     
     const response = await $fetch('/api/upload', {
       method: 'POST',

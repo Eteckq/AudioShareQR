@@ -32,72 +32,97 @@
     <div v-else class="min-h-screen">
       <!-- Header -->
       <PageHeader 
-        title="Gestion des Playlists"
+        title="Mes Audios"
         :show-logout="true"
         @logout="logout"
       />
 
       <!-- Contenu principal -->
-      <div class="p-6">
-        <!-- Boutons d'action -->
-        <ActionButtonsMain 
-          :buttons="mainButtons"
-          @action="handleMainAction"
-        />
-
-        <!-- Liste des playlists -->
-        <div v-if="loading" class="text-center py-8">
-          <p class="text-gray-400">Chargement des playlists...</p>
+      <div class="p-4">
+        <!-- Formulaire d'upload -->
+        <div class="mb-6 border border-gray-800 rounded-lg p-4 bg-gray-900">
+          <h2 class="text-lg font-semibold mb-4">Uploader un audio</h2>
+          <UploadForm
+            @submit="handleUploadSuccess"
+            @error="handleUploadError"
+          />
         </div>
 
-        <EmptyState 
-          v-else-if="playlists.length === 0"
-          message="Aucune playlist créée"
+        <!-- Liste des fichiers -->
+        <div v-if="loading" class="text-center py-8">
+          <p class="text-gray-400">Chargement des audios...</p>
+        </div>
+
+        <ErrorState 
+          v-else-if="error" 
+          :message="error"
+          @retry="loadFiles"
         />
 
-        <CardGrid 
-          v-else
-          :items="playlists"
-          @item-click="goToPlaylist"
+        <EmptyState 
+          v-else-if="files.length === 0"
+          message="Aucun audio uploadé"
         />
+
+        <ItemList 
+          v-else
+          :items="files"
+          @delete="confirmDelete"
+        >
+          <template #actions="{ item }">
+            <!-- Écouter -->
+            <NuxtLink 
+              :to="`/audio/${item.id}`"
+              class="px-2 py-1 text-xs bg-gray-700 text-gray-300 rounded hover:bg-gray-600"
+            >
+              Écouter
+            </NuxtLink>
+            
+            <!-- QR Code -->
+            <NuxtLink 
+              :to="`/success/${item.id}`"
+              class="px-2 py-1 text-xs bg-blue-900 text-blue-300 rounded hover:bg-blue-800"
+            >
+              QR
+            </NuxtLink>
+            
+            <!-- Supprimer -->
+            <button 
+              @click="confirmDelete(item)"
+              class="px-2 py-1 text-xs bg-red-900 text-red-300 rounded hover:bg-red-800"
+            >
+              Suppr
+            </button>
+          </template>
+        </ItemList>
       </div>
     </div>
 
-    <!-- Modal de création de playlist -->
+    <!-- Modal de confirmation de suppression -->
     <Modal
-      :is-open="showCreatePlaylist"
-      title="Créer une playlist"
-      @close="cancelCreatePlaylist"
+      :is-open="!!fileToDelete"
+      title="Supprimer ?"
+      @close="cancelDelete"
     >
-      <FormFields
-        name-label="Nom de la playlist"
-        name-placeholder="Ma playlist"
-        :show-description="true"
-        description-label="Description (optionnel)"
-        description-placeholder="Description de la playlist"
-        @name-change="onNameChange"
-        @description-change="onDescriptionChange"
-      />
+      <p class="text-sm text-gray-400 mb-6">
+        Supprimer "{{ fileToDelete?.name || 'Sans nom' }}" ?
+      </p>
       
       <template #footer>
-        <button
-          @click="createPlaylist"
-          :disabled="!newPlaylist.name"
-          class="flex-1 border rounded py-2 hover:bg-white hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Créer
-        </button>
-        <button
-          @click="cancelCreatePlaylist"
-          class="flex-1 border rounded py-2 hover:bg-gray-800 transition-colors"
+        <button 
+          @click="cancelDelete"
+          class="px-4 py-2 text-sm text-gray-300 bg-gray-700 rounded hover:bg-gray-600"
         >
           Annuler
         </button>
+        <button 
+          @click="deleteFile"
+          :disabled="deleting"
+          class="px-4 py-2 text-sm text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50"
+        >
+          {{ deleting ? '...' : 'Supprimer' }}
+        </button>
       </template>
-      
-      <div v-if="createError" class="mt-4 text-red-400 text-sm">
-        {{ createError }}
-      </div>
     </Modal>
   </div>
 </template>
@@ -107,23 +132,18 @@ const { isAuthenticated, checkAuth, setAuth } = useAuth()
 
 const pinInput = ref('')
 const pinError = ref('')
-const playlists = ref([])
+const files = ref([])
 const loading = ref(false)
-const showCreatePlaylist = ref(false)
-const createError = ref('')
-
-const newPlaylist = ref({
-  name: '',
-  description: ''
-})
+const error = ref('')
+const fileToDelete = ref(null)
+const deleting = ref(false)
 
 // Vérifier l'authentification au chargement de la page
 onMounted(() => {
   if (checkAuth()) {
-    loadPlaylists()
+    loadFiles()
   }
 })
-
 
 const verifyPin = async () => {
   if (pinInput.value.length !== 4) return
@@ -136,7 +156,7 @@ const verifyPin = async () => {
     
     if (response.success) {
       setAuth(true)
-      await loadPlaylists()
+      await loadFiles()
     } else {
       pinError.value = 'Code PIN incorrect'
       pinInput.value = ''
@@ -150,86 +170,59 @@ const logout = () => {
   setAuth(false)
   pinInput.value = ''
   pinError.value = ''
-  playlists.value = []
+  files.value = []
 }
 
-const loadPlaylists = async () => {
+const loadFiles = async () => {
   loading.value = true
+  error.value = ''
+  
   try {
-    const response = await $fetch('/api/playlists')
-    playlists.value = response
-  } catch (error) {
-    console.error('Erreur chargement playlists:', error)
+    const response = await $fetch('/api/files')
+    files.value = response.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  } catch (err) {
+    console.error('Erreur chargement fichiers:', err)
+    error.value = 'Erreur de chargement'
   } finally {
     loading.value = false
   }
 }
 
-const createPlaylist = async () => {
-  if (!newPlaylist.value.name) return
+const handleUploadSuccess = async (response) => {
+  // Recharger la liste des fichiers après un upload réussi
+  await loadFiles()
+}
+
+const handleUploadError = (err) => {
+  error.value = err.data?.message || 'Erreur lors de l\'upload'
+}
+
+const confirmDelete = (file) => {
+  fileToDelete.value = file
+}
+
+const cancelDelete = () => {
+  fileToDelete.value = null
+}
+
+const deleteFile = async () => {
+  if (!fileToDelete.value) return
+  
+  deleting.value = true
   
   try {
-    const response = await $fetch('/api/playlists', {
-      method: 'POST',
-      body: newPlaylist.value
+    await $fetch(`/api/files/${fileToDelete.value.id}`, {
+      method: 'DELETE'
     })
     
-    if (response.success) {
-      await loadPlaylists()
-      cancelCreatePlaylist()
-    }
-  } catch (error) {
-    createError.value = error.data?.message || 'Erreur lors de la création'
+    files.value = files.value.filter(f => f.id !== fileToDelete.value.id)
+    fileToDelete.value = null
+    
+  } catch (err) {
+    console.error('Erreur:', err)
+    error.value = 'Erreur de suppression'
+  } finally {
+    deleting.value = false
   }
-}
-
-const onNameChange = (name) => {
-  newPlaylist.value.name = name
-}
-
-const onDescriptionChange = (description) => {
-  newPlaylist.value.description = description
-}
-
-const cancelCreatePlaylist = () => {
-  showCreatePlaylist.value = false
-  newPlaylist.value = { name: '', description: '' }
-  createError.value = ''
-}
-
-const mainButtons = ref([
-  {
-    id: 'create-playlist',
-    text: '+ Créer une nouvelle playlist',
-    class: 'hover:bg-white hover:text-black'
-  },
-  {
-    id: 'upload-individual',
-    text: 'Upload audio individuel',
-    class: 'hover:bg-gray-800'
-  }
-])
-
-const handleMainAction = (actionId) => {
-  switch (actionId) {
-    case 'create-playlist':
-      showCreatePlaylist.value = true
-      break
-    case 'upload-individual':
-      goToUpload()
-      break
-  }
-}
-
-const goToUpload = () => {
-  navigateTo('/upload')
-}
-
-const goToPlaylist = (playlist) => {
-  navigateTo(`/admin/playlist/${playlist.id}`)
-}
-
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('fr-FR')
 }
 </script>

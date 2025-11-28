@@ -10,7 +10,6 @@ function getBasePathInternal() {
 
 const BASE_PATH = getBasePathInternal()
 const DB_FILE = path.join(BASE_PATH, 'data', 'files.json')
-const PLAYLISTS_FILE = path.join(BASE_PATH, 'data', 'playlists.json')
 const DATA_DIR = path.join(BASE_PATH, 'data')
 const FILES_DIR = path.join(BASE_PATH, 'files')
 
@@ -32,10 +31,6 @@ if (!fs.existsSync(DATA_DIR)) {
 // Initialiser les fichiers JSON s'ils n'existent pas
 if (!fs.existsSync(DB_FILE)) {
   fs.writeFileSync(DB_FILE, JSON.stringify([]))
-}
-
-if (!fs.existsSync(PLAYLISTS_FILE)) {
-  fs.writeFileSync(PLAYLISTS_FILE, JSON.stringify([]))
 }
 
 export function getAllFiles() {
@@ -70,88 +65,6 @@ export function saveFile(fileData) {
   }
 }
 
-// Fonctions pour les playlists
-export function getAllPlaylists() {
-  try {
-    const data = fs.readFileSync(PLAYLISTS_FILE, 'utf8')
-    return JSON.parse(data)
-  } catch (error) {
-    console.error('Erreur lors de la lecture des playlists:', error)
-    return []
-  }
-}
-
-export function getPlaylistById(id) {
-  const playlists = getAllPlaylists()
-  return playlists.find(playlist => playlist.id === id)
-}
-
-export function savePlaylist(playlistData) {
-  try {
-    const playlists = getAllPlaylists()
-    const newPlaylist = {
-      id: generateId(),
-      ...playlistData,
-      createdAt: new Date().toISOString()
-    }
-    playlists.push(newPlaylist)
-    fs.writeFileSync(PLAYLISTS_FILE, JSON.stringify(playlists, null, 2))
-    return newPlaylist
-  } catch (error) {
-    console.error('Erreur lors de la sauvegarde de la playlist:', error)
-    throw error
-  }
-}
-
-export function updatePlaylist(id, playlistData) {
-  try {
-    const playlists = getAllPlaylists()
-    const playlistIndex = playlists.findIndex(playlist => playlist.id === id)
-    
-    if (playlistIndex === -1) {
-      return false
-    }
-    
-    playlists[playlistIndex] = {
-      ...playlists[playlistIndex],
-      ...playlistData,
-      updatedAt: new Date().toISOString()
-    }
-    fs.writeFileSync(PLAYLISTS_FILE, JSON.stringify(playlists, null, 2))
-    return playlists[playlistIndex]
-  } catch (error) {
-    console.error('Erreur lors de la mise à jour de la playlist:', error)
-    return false
-  }
-}
-
-export function deletePlaylistById(id) {
-  try {
-    const playlists = getAllPlaylists()
-    const playlistIndex = playlists.findIndex(playlist => playlist.id === id)
-    
-    if (playlistIndex === -1) {
-      return false
-    }
-    
-    playlists.splice(playlistIndex, 1)
-    fs.writeFileSync(PLAYLISTS_FILE, JSON.stringify(playlists, null, 2))
-    return true
-  } catch (error) {
-    console.error('Erreur lors de la suppression de la playlist:', error)
-    return false
-  }
-}
-
-export function getFilesByPlaylistId(playlistId) {
-  try {
-    const files = getAllFiles()
-    return files.filter(file => file.playlistId === playlistId)
-  } catch (error) {
-    console.error('Erreur lors de la récupération des fichiers de la playlist:', error)
-    return []
-  }
-}
 
 export function deleteFileById(id) {
   try {

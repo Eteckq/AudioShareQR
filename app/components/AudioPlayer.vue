@@ -3,7 +3,7 @@
     <!-- Contrôles de navigation -->
     <div class="flex items-center justify-center space-x-6">
       <!-- Bouton précédent -->
-      <button
+      <!-- <button
         @click="$emit('previous')"
         :disabled="!hasPrevious"
         class="w-10 h-10 flex items-center justify-center transition-colors duration-200"
@@ -16,7 +16,7 @@
         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
           <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
         </svg>
-      </button>
+      </button> -->
 
       <!-- Bouton play/pause principal -->
       <button
@@ -66,7 +66,7 @@
       </button>
 
       <!-- Bouton suivant -->
-      <button
+      <!-- <button
         @click="$emit('next')"
         :disabled="!hasNext"
         class="w-10 h-10 flex items-center justify-center transition-colors duration-200"
@@ -79,7 +79,7 @@
         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
           <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
         </svg>
-      </button>
+      </button> -->
     </div>
 
     <!-- Barre de progression -->
@@ -89,9 +89,11 @@
         <span>{{ formatTime(duration) }}</span>
       </div>
       <div
-        class="w-full h-2 bg-gray-700 rounded-full transition-all duration-200"
-        :class="isReady ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'"
+        class="w-full h-3 bg-gray-700 rounded-full transition-all duration-200 relative"
+        :class="isReady ? 'cursor-pointer hover:h-4' : 'cursor-not-allowed opacity-50'"
         @click="seekTo"
+        @mousedown="startSeek"
+        @touchstart="startSeek"
         ref="progressBar"
       >
         <div
@@ -160,6 +162,7 @@ const duration = ref(0);
 const progressPercentage = ref(0);
 const isLoading = ref(true);
 const isReady = ref(false);
+const isDragging = ref(false);
 
 const togglePlay = () => {
   if (!audioElement.value || !isReady.value) return;
@@ -171,15 +174,64 @@ const togglePlay = () => {
   }
 };
 
+const getEventX = (event) => {
+  if (event.touches && event.touches.length > 0) {
+    return event.touches[0].clientX;
+  }
+  return event.clientX;
+};
+
 const seekTo = (event) => {
   if (!isReady.value || !audioElement.value || !progressBar.value) return;
+  if (isDragging.value) return; // Éviter les conflits avec le drag
 
   const rect = progressBar.value.getBoundingClientRect();
-  const clickX = event.clientX - rect.left;
-  const percentage = clickX / rect.width;
+  const clickX = getEventX(event) - rect.left;
+  const percentage = Math.max(0, Math.min(1, clickX / rect.width));
   const newTime = percentage * duration.value;
 
   audioElement.value.currentTime = newTime;
+};
+
+const updateSeek = (event) => {
+  if (!isReady.value || !audioElement.value || !progressBar.value || !isDragging.value) return;
+
+  const rect = progressBar.value.getBoundingClientRect();
+  const x = getEventX(event) - rect.left;
+  const percentage = Math.max(0, Math.min(1, x / rect.width));
+  const newTime = percentage * duration.value;
+
+  audioElement.value.currentTime = newTime;
+  currentTime.value = newTime;
+  progressPercentage.value = percentage * 100;
+};
+
+const startSeek = (event) => {
+  if (!isReady.value || !audioElement.value || !progressBar.value) return;
+
+  event.preventDefault();
+  isDragging.value = true;
+
+  // Mettre à jour immédiatement la position
+  updateSeek(event);
+
+  // Ajouter les écouteurs pour le drag
+  const handleMove = (e) => {
+    updateSeek(e);
+  };
+
+  const handleEnd = () => {
+    isDragging.value = false;
+    document.removeEventListener('mousemove', handleMove);
+    document.removeEventListener('mouseup', handleEnd);
+    document.removeEventListener('touchmove', handleMove);
+    document.removeEventListener('touchend', handleEnd);
+  };
+
+  document.addEventListener('mousemove', handleMove);
+  document.addEventListener('mouseup', handleEnd);
+  document.addEventListener('touchmove', handleMove);
+  document.addEventListener('touchend', handleEnd);
 };
 
 const formatTime = (time) => {
@@ -215,7 +267,7 @@ const onError = () => {
 };
 
 const onTimeUpdate = () => {
-  if (audioElement.value) {
+  if (audioElement.value && !isDragging.value) {
     currentTime.value = audioElement.value.currentTime;
     progressPercentage.value = (currentTime.value / duration.value) * 100;
     emit("timeupdate", currentTime.value);

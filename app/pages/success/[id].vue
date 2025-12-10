@@ -19,6 +19,13 @@
       </div>
 
       <button
+        @click="downloadQR"
+        class="w-full border border-blue-800 rounded p-2 hover:bg-black hover:text-white transition-colors"
+      >
+        Télécharger le QR code
+      </button>
+
+      <button
         @click="uploadNewFile"
         class="w-full border border-white rounded p-2 hover:bg-black hover:text-white transition-colors"
       >
@@ -55,6 +62,15 @@ const fileData = ref(null);
 const qrCodeUrl = ref("");
 const loading = ref(true);
 const error = ref("");
+
+const downloadQR = () => {
+  if (qrCodeUrl.value) {
+    const link = document.createElement('a')
+    link.download = `qr-code-${fileId}.png`
+    link.href = qrCodeUrl.value
+    link.click()
+  }
+}
 
 // Fonction pour charger les données du fichier
 const loadFileData = async () => {
